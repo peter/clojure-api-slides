@@ -178,6 +178,16 @@
 				    <script type="text/template">
 							## Functions
 
+							<pre>
+								<code class="clojure">
+									(defn greeting [name]
+										(str "Hello " name))
+
+									(greeting "Joe")
+									; => "Hello Joe"
+								</code>
+							</pre>
+
 							TODO: named functions and anonymous functions. Using let.
 				    </script>
 				</section>
@@ -241,6 +251,46 @@
 				</section>
 
 				<section data-markdown>
+					<script type="text/template">
+						## Sequence Functions
+
+						<pre>
+							<code class="clojure">
+								map
+								filter/remove
+								reduce
+								conj/cons
+								first
+								second
+								last
+								next
+								not-empty
+								count
+								take
+								reverse
+								partition/flatten
+								distinct
+								replace
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Map Functions
+
+						<pre>
+							<code class="clojure">
+								merge
+								rename-keys
+								select-keys
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
 			    <script type="text/template">
 						## Sequence to Map Transformations
 
@@ -268,10 +318,23 @@
 
 			<section data-markdown>
 				<script type="text/template">
-					## Sequence Functions
+					## Map Transformations
 
 					<pre>
 						<code class="clojure">
+							(assoc {:a 1} :b 2) ; => {:a 1, :b 2}
+
+							(dissoc {:a 1 :b 2} :b) ; => {:a 1}
+
+							(select-keys {:a 1 :b 2} [:b]) ; => {:b 2}
+
+							(get-in {:a {:b 1}} [:a :b]) ; => 1
+
+							(update-in {:a {:b 1}} [:a :b] inc) ; => {:a {:b 2}}
+
+							(update-in {:a} [:a :b] (fnil inc 0)) ; => {:a {:b 0}}
+
+							(clojure.set/rename-keys {:a 1} {:a :b}) ; => {:b 1}
 						</code>
 					</pre>
 				</script>
@@ -279,13 +342,12 @@
 
 			<section data-markdown>
 				<script type="text/template">
-					## Map Functions
+					## Destructuring
 
 					<pre>
 						<code class="clojure">
-							merge
-							rename-keys
-							select-keys
+							(defn map-invert [map]
+								(reduce (fn [m [k v]] (assoc m v k)) {} map))
 						</code>
 					</pre>
 				</script>
@@ -293,7 +355,23 @@
 
 			<section data-markdown>
 				<script type="text/template">
-					## recur
+					## Variadic Functions and Apply
+
+					<pre>
+						<code class="clojure">
+							(defn complement [f]
+								(fn [& args]
+									(not (apply f args))))
+						</code>
+					</pre>
+
+					Note: This is also an example of a higher order function that returns a function.
+				</script>
+			</section>
+
+			<section data-markdown>
+				<script type="text/template">
+					## Recur
 
 					<pre>
 						<code class="clojure">
@@ -337,6 +415,53 @@
 
 				<section data-markdown>
 			    <script type="text/template">
+						## Thread First Macro
+
+						<pre>
+							<code class="clojure">
+								(require '[clojure.string :as str])
+
+								(def channels ["TV4" "TV4 totalt"])
+
+								(defn channel-key [channel]
+								  (-> channel
+								      (str/lower-case)
+								      (str/replace #" " "_")
+								      (keyword)))
+
+								(map channel-key channels) ; => [:tv4 :tv4_totalt]
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Thread Last Macro
+
+						<pre>
+							<code class="clojure">
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Working with Files
+
+						<pre>
+							<code class="clojure">
+								slurp
+
+								spit
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
 						## Web Development with Ring
 
 						* Ring is the standard web application library for Clojure
@@ -359,6 +484,30 @@
 						## Ring Middleware
 
 						Middleware are higher-level functions that add additional functionality to handlers. The first argument of a middleware function should be a handler, and its return value should be a new handler function that will call the original handler.
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Calling REST APIs
+
+						<pre>
+							<code class="clojure">
+								(require '[clj-http.client :as client])
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## JSON
+
+						<pre>
+							<code class="clojure">
+								(require '[cheshire.core :as json])
+							</code>
+						</pre>
 					</script>
 				</section>
 
