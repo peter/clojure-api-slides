@@ -53,7 +53,7 @@
 				        ## What is Clojure?
 
 								* Programming language for the JVM, JavaScript et al
-								* Lisp, dynamically typed, functional (emphasis on pure functions), data-oriented
+								* Lisp, dynamically typed, functional with emphasis on pure functions, data-oriented
 								* Released in 2007
 				    </script>
 				</section>
@@ -65,8 +65,8 @@
 							* Functional programming
 							* Dynamic, concise, high programmer productivity
 							* Performance on par with Java
-							* The JVM and Java libraries
-							* Use the same language on the client and the server
+							* Leverages the JVM and has direct access to Java libraries
+							* Supported on both the client and the server
 							* Syntactic extensibility via macros
 							* Concurrency support
 				    </script>
@@ -77,10 +77,9 @@
 							## Data Orientation
 
 							* Programming is data processing
-							* Programming should be more about data and less about code
-							* Objects are an ok approach to process but a bad approach to capturing information
-							* In Clojure information is plain data
-							* With plain data you have access to a huge set of standard library functions for processing
+							* Emphasizes data over code
+							* Objects are ok for process but bad for information
+							* Plain data accessed with a huge set of library functions
 				    </script>
 				</section>
 
@@ -89,9 +88,9 @@
 							## Lisp Syntax
 
 							* Code is data
-							* What would be declarations in other languages are just lists with a function first
 							* There are no operators, just functions, macros, and a handful of special forms (if, def, fn, let etc.)
-							* Everything is an expression but side effects are allowed
+							* Everything is an expression
+							* Side effects are allowed
 							* The reader takes code (text) and produces in memory data structures to be evaluated/compiled
 							* No precedence rules are needed. All functions evaluate left to right and inside out.
 				    </script>
@@ -140,9 +139,11 @@
 									(instance? Double 1.23)
 									; => true
 
-									(use 'clojure.pprint)
-									(use 'clojure.reflect)
-									(pprint (reflect 1))
+									(map #(% 1.23) [number? float? integer? zero?
+									                string? keyword? map? vector? nil?])
+									; => (true true false false false false false false false)
+
+									(clojure.reflect/reflect 1)
 									; => detailed info on class, ancestors, methods etc.
 								</code>
 							</pre>
@@ -222,7 +223,7 @@
 
 				<section data-markdown>
 			    <script type="text/template">
-						## Truth
+						## Truthiness
 
 						Only nil and false are falsey, everything else is truthy
 
@@ -277,20 +278,6 @@
 				</section>
 
 				<section data-markdown>
-					<script type="text/template">
-						## Map Functions
-
-						<pre>
-							<code class="clojure">
-								merge
-								rename-keys
-								select-keys
-							</code>
-						</pre>
-					</script>
-				</section>
-
-				<section data-markdown>
 			    <script type="text/template">
 						## Sequence to Map Transformations
 
@@ -335,6 +322,28 @@
 							(update-in {:a} [:a :b] (fnil inc 0)) ; => {:a {:b 0}}
 
 							(clojure.set/rename-keys {:a 1} {:a :b}) ; => {:b 1}
+
+							(merge {:a {:b 1}} {:a {:c 2}}) ; => {:a {:c 2}}
+						</code>
+					</pre>
+				</script>
+			</section>
+
+			<section data-markdown>
+				<script type="text/template">
+					## Deep Map Merge
+
+					<pre>
+						<code class="clojure">
+							(defn deep-merge
+							  "Recursively merges maps"
+							  [& vals]
+							  (if (every? map? vals)
+							    (apply merge-with deep-merge vals)
+							    (last vals)))
+
+							(deep-merge {:a {:b 1}} {:a {:c 2}})
+							; => {:a {:b 1 :c 2}}
 						</code>
 					</pre>
 				</script>
@@ -347,7 +356,15 @@
 					<pre>
 						<code class="clojure">
 							(defn map-invert [map]
-								(reduce (fn [m [k v]] (assoc m v k)) {} map))
+								(reduce (fn [m [k v]] (assoc m v k))
+								        {}
+								        map))
+
+							(def data {:a 1 :b 2})
+
+							(let [{:keys [a b c] :or {c 3}} data]
+								[a b c])
+							; => [1 2 3]
 						</code>
 					</pre>
 				</script>
@@ -441,9 +458,42 @@
 
 						<pre>
 							<code class="clojure">
+								(def divisible? #(or (zero? (mod % 3)) (zero? (mod % 5))))
+
+								(->>
+								  (range 1000)
+								  (filter divisible?)
+								  (reduce +)
+								  println)
+
+								(reduce + (filter divisible? (range 1000)))
 							</code>
 						</pre>
+
+						Note: Euler problem 1 - the sum of all numbers under 1,000 that are divisible by either 3 or 5
 					</script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Concurrency
+
+							<pre>
+								<code class="clojure">
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Macros
+
+							<pre>
+								<code class="clojure">
+								</code>
+							</pre>
+				    </script>
 				</section>
 
 				<section data-markdown>
@@ -461,6 +511,17 @@
 				</section>
 
 				<section data-markdown>
+				    <script type="text/template">
+							## Java Interop
+
+							<pre>
+								<code class="clojure">
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
 			    <script type="text/template">
 						## Web Development with Ring
 
@@ -475,7 +536,16 @@
 			    <script type="text/template">
 						## Ring Handlers
 
-						Handlers are functions that take one argument, a map representing the HTTP request, and return a map representing the HTTP response
+						Handlers are pure functions that take an HTTP request map and return an HTTP response map
+
+						<pre>
+							<code class="clojure">
+								(defn home [request]
+								  {:status 200
+								   :headers {"Content-Type" "text/html"}
+								   :body "Hello World"})
+							</code>
+						</pre>
 					</script>
 				</section>
 
@@ -494,6 +564,50 @@
 						<pre>
 							<code class="clojure">
 								(require '[clj-http.client :as client])
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Parallell API Calls
+
+						<pre>
+							<code class="clojure">
+								(defn invoke-api-1 []
+									(Thread/sleep 1000)
+									"api-1-data")
+
+								(defn invoke-api-2 []
+									(Thread/sleep 1000)
+									"api-2-data")
+
+								(time (println (pcalls invoke-api-1 invoke-api-2)))
+								; => (api-data-1 api-data-2)
+								; => "Elapsed time: 1004.511257 msecs"
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Named Parallell API Calls
+
+						<pre>
+							<code class="clojure">
+								(def apis {
+									:api1 invoke-api-1
+									:api2 invoke-api-2})
+
+								(defn pcalls-map [map]
+									(zipmap (keys map)
+									        (apply pcalls (vals map))))
+
+								(time (println (pcalls-map apis)))
+								; => {:api1 api-data-1 :api2 api-data-2}
+								; => "Elapsed time: 1005.052411 msecs"
 							</code>
 						</pre>
 					</script>
