@@ -86,6 +86,19 @@
 
 				<section data-markdown>
 				    <script type="text/template">
+							## Lisp Syntax
+
+							* Code is data
+							* What would be declarations in other languages are just lists with a function first
+							* There are no operators, just functions, macros, and a handful of special forms (if, def, fn, let etc.)
+							* Everything is an expression but side effects are allowed
+							* The reader takes code (text) and produces in memory data structures to be evaluated/compiled
+							* No precedence rules are needed. All functions evaluate left to right and inside out.
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
 							## Atomic Data Types
 
 							<pre>
@@ -140,23 +153,32 @@
 				    <script type="text/template">
 							## Immutable Data Structures
 
-							* Lists are singly linked and add efficiently at the front
-							* Vectors are functions that take an index and return a value
-							* Maps are functions that take a key and return a value
-							* Sets
+							<pre class="notes">
+								<code class="clojure">
+									'(1 "foobar" 3)
+
+									[5 nil 3]
+
+									{:a 1 :b 2}
+
+									#{:foo :bar}
+								</code>
+							</pre>
+
+							Note: Lists are singly linked and add efficiently at the front.
+										Vectors are functions that take an index and return a value.
+										Maps are functions that take a key and return a value.
+										All data structures can hold heterogeneous data and can be nested.
+										Lists and vectors have a sequential shape. Hash maps and sets
+										are associative.
 				    </script>
 				</section>
 
 				<section data-markdown>
 				    <script type="text/template">
-							## Lisp Syntax
+							## Functions
 
-							* Code is data
-							* What would be declarations in other languages are just lists with a function first
-							* There are no operators, just functions, macros, and a handful of special forms (if, def, fn, let etc.)
-							* Everything is an expression but side effects are allowed
-							* The reader takes code (text) and produces in memory data structures to be evaluated/compiled
-							* No precedence rules are needed. All functions evaluate left to right and inside out.
+							TODO: named functions and anonymous functions. Using let.
 				    </script>
 				</section>
 
@@ -220,6 +242,101 @@
 
 				<section data-markdown>
 			    <script type="text/template">
+						## Sequence to Map Transformations
+
+						<pre>
+							<code class="clojure">
+								(def keys [:a :b])
+
+								(def values [1 2])
+
+								(into {} (map vector keys values))
+
+								(apply hash-map (interleave keys values))
+
+								(zipmap keys values)
+
+								(defn csv-map [lines]
+									(map #(zipmap (map keyword (first lines)) %1)
+									     (rest lines)))
+							</code>
+						</pre>
+
+						Note: Example usage of csv-map: (csv-map [["Name" "Age"] ["Sven" 9] ["Anna" 6]])
+					</script>
+				</section>
+
+			<section data-markdown>
+				<script type="text/template">
+					## Sequence Functions
+
+					<pre>
+						<code class="clojure">
+						</code>
+					</pre>
+				</script>
+			</section>
+
+			<section data-markdown>
+				<script type="text/template">
+					## Map Functions
+
+					<pre>
+						<code class="clojure">
+							merge
+							rename-keys
+							select-keys
+						</code>
+					</pre>
+				</script>
+			</section>
+
+			<section data-markdown>
+				<script type="text/template">
+					## recur
+
+					<pre>
+						<code class="clojure">
+							(defn every?
+							  "Returns true if (pred x) is true for every x in coll"
+							  [pred coll]
+							  (cond
+							   (nil? (seq coll)) true
+							   (pred (first coll)) (recur pred (next coll))
+							   :else false))
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Loop and Recur
+
+						<pre>
+							<code class="clojure">
+								(defn zipmap
+								  "Returns a map with the keys mapped to vals"
+								  [keys vals]
+								    (loop [map {}
+								           ks (seq keys)
+								           vs (seq vals)]
+								      (if (and ks vs)
+								        (recur (assoc map (first ks) (first vs))
+								               (next ks)
+								               (next vs))
+								        map)))
+							</code>
+						</pre>
+
+						Note: Notice the use of first and next which is typical in recursive code.
+									One reason to use seq here is that an empty seq is nil and thus false in a boolean context.
+									Also notice the use of a documentation string for functions.
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
 						## Web Development with Ring
 
 						* Ring is the standard web application library for Clojure
@@ -228,7 +345,6 @@
 						* It's easily deployed to Heroku with the Jetty adapter
 					</script>
 				</section>
-
 
 				<section data-markdown>
 			    <script type="text/template">
