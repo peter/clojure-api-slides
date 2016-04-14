@@ -659,6 +659,32 @@
 
 				<section data-markdown>
 				    <script type="text/template">
+							## Atom Example
+
+							<pre>
+								<code class="clojure">
+									(defn create-counter []
+										(let [count (atom 0)
+													ops {
+						  :inc! #(swap! count inc)
+						  :dec! #(swap! count dec)
+						  :get #(deref count)}]
+											(fn [op-name & args]
+												(apply (op-name ops) args))))
+
+									(def counter (create-counter))
+
+									(counter :inc!)
+									(counter :inc!)
+									(counter :get)
+									; => 2
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
 							## Macros
 
 							<pre>
@@ -772,6 +798,24 @@
 
 				<section data-markdown>
 			    <script type="text/template">
+						## Request Map Keys
+
+						<pre>
+							<code class="clojure">
+								:uri
+								:headers
+								:query-string
+								:request-method
+								:protocol
+								:body
+								...
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
 						## Ring Middleware
 
 						Middleware are handlers that wrap other handlers.
@@ -783,6 +827,28 @@
 										(time (handler req))))
 							</code>
 						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Middleware for JSON APIs
+
+						<pre>
+							<code class="clojure">
+							  (-> handler
+							      (wrap-keyword-params)
+							      (wrap-json-params {})
+							      (wrap-params {})
+							      (wrap-json-response {:pretty true}))
+							</code>
+						</pre>
+
+						Note: These middleware together conviently put query params and JSON
+						      bodies in a params map in the request. The wrap-json-response
+									middleware will serialize a data structure in the response body
+									to JSON. In development you also want the wrap-reload middleware
+									for reloading code.
 					</script>
 				</section>
 
@@ -817,6 +883,14 @@
 						<pre>
 							<code class="clojure">
 								(require '[clj-http.client :as client])
+
+								(client/get "https://api-endpoint" {
+									:query-params {} :as :json})
+
+								(client/post "https://api-endpoint" {
+									 :form-params {:foo "bar"}
+									 :content-type :json
+									 :oauth-token "token"})))
 							</code>
 						</pre>
 					</script>
@@ -873,6 +947,12 @@
 						<pre>
 							<code class="clojure">
 								(require '[cheshire.core :as json])
+
+								(json/generate-string {:foo "bar"})
+								; => {"foo":"bar"}
+
+								(json/parse-string "{\"foo\":\"bar\"}" true)
+								; => {:foo "bar"}
 							</code>
 						</pre>
 					</script>
