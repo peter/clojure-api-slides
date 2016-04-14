@@ -217,7 +217,7 @@
 
 				<section data-markdown>
 				    <script type="text/template">
-							## Using Namespace
+							## Using a Namespace
 
 							<pre>
 								<code class="clojure">
@@ -264,8 +264,7 @@
 				    <script type="text/template">
 							## Equality
 
-							Clojure uses value semantics for equality and it works for all atomic data types and data structure
-							types (maps, lists, vectors, sets)
+							Value semantics for all data types and structures
 
 							<pre>
 								<code class="clojure">
@@ -423,7 +422,7 @@
 
 			<section data-markdown>
 				<script type="text/template">
-					## Transforming values of map
+					## Transforming Map Values
 
 					<pre>
 						<code class="clojure">
@@ -527,6 +526,26 @@
 
 			<section data-markdown>
 				<script type="text/template">
+					## Multi-Arity Functions
+
+					<pre>
+						<code class="clojure">
+							(defn greeting
+								([name] (str "Hello " name))
+								([] (greeting "World")))
+
+							(greeting)
+							; => "Hello World"
+
+							(greeting "Joe")
+							; => "Hello Joe"
+						</code>
+					</pre>
+				</script>
+			</section>
+
+			<section data-markdown>
+				<script type="text/template">
 					## Recur
 
 					<pre>
@@ -615,22 +634,26 @@
 
 				<section data-markdown>
 				    <script type="text/template">
-							## Concurrency
+							## Concurrency - Atom
 
 							<pre>
 								<code class="clojure">
-									(defn counter []
-									  (let [cnt (atom 0)]
-									    {:inc! (fn [] (swap! cnt inc))
-									     :dec! (fn [] (swap! cnt dec))
-									     :get (fn [] @cnt)} ))
+									(def counter (atom 0))
 
-									(let [cnt (counter)]
-									  ((:inc! cnt))
-									  ((:inc! cnt))
-									  ((:get cnt)))
+									(swap! counter inc)
+									(println @counter)
+									; => 1
+
+									(swap! counter inc)
+									(println @counter)
+									; => 0
 								</code>
 							</pre>
+
+							Note: Allows thread safe access to shared data.
+							      Example usage: [memoize function](http://clojure.org/reference/atoms).
+										The available reference types in Clojure are
+										[Refs, Atoms, Agents, and Vars](http://stackoverflow.com/questions/9132346/clojure-differences-between-ref-var-agent-atom-with-examples).
 				    </script>
 				</section>
 
@@ -640,8 +663,22 @@
 
 							<pre>
 								<code class="clojure">
+									(defmacro unless [arg & body]
+									  `(if (not ~arg)
+										(do ~@body)))
+
+									(unless false (println "body executing"))
+									; => body executing
+
+									(macroexpand '(unless false (println "body executing")))
+									; => (if (clojure.core/not false)
+									;     (do (println "body executing")))
 								</code>
 							</pre>
+
+							Note: A nice walk through of macros is available at
+							[Learn X in Y minutes](https://learnxinyminutes.com/docs/clojure-macros) and at
+							[Clojure for the Brave and True](http://www.braveclojure.com/writing-macros).
 				    </script>
 				</section>
 
@@ -651,9 +688,10 @@
 
 						<pre>
 							<code class="clojure">
-								slurp
+								(spit "foobar.txt" "here is some contents")
 
-								spit
+								(slurp "foobar.txt")
+								; => here is some contents
 							</code>
 						</pre>
 					</script>
