@@ -77,9 +77,9 @@
 							## Data Orientation
 
 							* Programming is data processing
-							* Emphasize data over code
+							* Emphasizes data over code
 							* Objects are ok for process but bad for information
-							* Use plain data accessed with a huge set of library functions
+							* Uses plain data accessed with a huge set of library functions
 				    </script>
 				</section>
 
@@ -88,7 +88,7 @@
 							## Lisp Syntax
 
 							* Code is data
-							* There are no operators, just functions, macros, and a handful of special forms (if, def, fn, let etc.)
+							* No operators, just functions, macros, and a handful of special forms (if, def, fn, let etc.)
 							* Everything is an expression
 							* Side effects are allowed
 							* The reader takes code (text) and produces in memory data structures to be evaluated/compiled
@@ -126,28 +126,113 @@
 
 				<section data-markdown>
 				    <script type="text/template">
-							## Introspection
+							## Functions
 
-							<pre class="notes">
+							<pre>
 								<code class="clojure">
-									(class 1.23)
-									; => java.lang.Double
+									(defn greeting [name]
+										(str "Hello " name))
 
-									(ancestors (class 1.23))
-									; => #{java.io.Serializable java.lang.Comparable ...}
+									(def greeting (fn [name]
+									                (str "Hello " name)))
 
-									(instance? Double 1.23)
-									; => true
+									(def greeting #(str "Hello " %))
 
-									(map #(% 1.23) [number? float? integer? zero?
-									                string? keyword? map? vector? nil?])
-									; => (true true false false false false false false false)
-
-									(clojure.reflect/reflect 1)
-									; => detailed info on class, ancestors, methods etc.
+									(greeting "Joe")
+									; => "Hello Joe"
 								</code>
 							</pre>
+
+							Note: functions can be named or anonymous. Anonymous functions
+							can be written in two ways. All function definitions are equivalent.
 				    </script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Let
+
+						<pre>
+							<code class="clojure">
+								(let [a 1
+								      b 2]
+								  (+ a b))
+								; => 3
+
+								(defn foo [c]
+								  (let [a 1
+									    b 2]
+									  (+ a b c)))
+
+								(foo 3)
+								; => 6
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Let Example
+
+						<pre>
+							<code class="clojure">
+								(defn authenticate [email password]
+									(if-let [success (and (= email "open")
+									                      (= password "sesame"))]
+							           "token" nil))
+
+								(defn login [request]
+									(let [email (get-in request [:params :email])
+									      password (get-in request [:params :password])
+									      token (authenticate email password)]
+									  (if token
+										{:status 200 :body {:token token}}
+										{:status 401})))
+
+								(login {:params {:email "open" :password "sesame"}})
+								; => {:status 200 :body {:token "token"}}
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Namespaces with Vars
+
+							<pre>
+								<code class="clojure">
+									; File: app/util.clj
+									(ns app.util)
+
+									(def pi 3.14)
+
+									(defn area [radius]
+										(* pi (Math/pow radius 2)))
+								</code>
+							</pre>
+						</script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Using Namespace
+
+							<pre>
+								<code class="clojure">
+									; File: app/web.clj
+									(ns app.web
+										(require [app.util :as util]))
+
+									util/pi
+									; => 3.14
+
+									(util/area 2)
+									; => 12.56
+								</code>
+							</pre>
+						</script>
 				</section>
 
 				<section data-markdown>
@@ -173,96 +258,6 @@
 										Lists and vectors have a sequential shape. Hash maps and sets
 										are associative.
 				    </script>
-				</section>
-
-				<section data-markdown>
-				    <script type="text/template">
-							## Functions
-
-							<pre>
-								<code class="clojure">
-									(defn greeting [name]
-										(str "Hello " name))
-
-									(def greeting (fn [name]
-									                (str "Hello " name)))
-
-									(def greeting #(str "Hello " %))
-
-									(greeting "Joe")
-									; => "Hello Joe"
-								</code>
-							</pre>
-
-							Note: functions can be named or anonymous. Anonymous functions
-							can be written in two ways. All function definitions are equivalent.
-				    </script>
-				</section>
-
-				<section data-markdown>
-				    <script type="text/template">
-							## Let
-
-							<pre>
-								<code class="clojure">
-									(defn authenticate [email password]
-										(let [success (and (= email "open")
-										                   (= password "sesame"))]
-											(if success "token" nil)))
-
-									(defn login [request]
-										(let [email (get-in request [:params :email])
-										      password (get-in request [:params :password])
-										      token (authenticate email password)]
-										  (if token
-											{:status 200 :body {:token token}}
-											{:status 401})))
-
-									(login {:params {:email "open" :password "sesame"}})
-									; => {:status 200 :body {:token "token"}}
-								</code>
-							</pre>
-
-							Note: let creates local and lexically scoped bindings (vars).
-						</script>
-				</section>
-
-				<section data-markdown>
-				    <script type="text/template">
-							## Namespaces with Vars
-
-							<pre>
-								<code class="clojure">
-									; File: app/util.clj
-									(ns app.util)
-
-									(def pi 3.14)
-
-									(defn area [radius]
-										(* pi (Math/pow radius 2)))
-								</code>
-							</pre>
-						</script>
-				</section>
-
-				<section data-markdown>
-				    <script type="text/template">
-							## Using Namespaces with Vars
-
-							<pre>
-								<code class="clojure">
-									; File: app/web.clj
-									(ns app.web
-										(require [app.util :as util]))
-
-									util/pi
-									; => 3.14
-
-									(util/area 2)
-									; => 12.56
-								</code>
-							</pre>
-						</script>
 				</section>
 
 				<section data-markdown>
@@ -324,6 +319,32 @@
 				</section>
 
 				<section data-markdown>
+				    <script type="text/template">
+							## Introspection
+
+							<pre class="notes">
+								<code class="clojure">
+									(class 1.23)
+									; => java.lang.Double
+
+									(ancestors (class 1.23))
+									; => #{java.io.Serializable java.lang.Comparable ...}
+
+									(instance? Double 1.23)
+									; => true
+
+									(map #(% 1.23) [number? float? integer? zero?
+									                string? keyword? map? vector? nil?])
+									; => (true true false false false false false false false)
+
+									(clojure.reflect/reflect 1)
+									; => detailed info on class, ancestors, methods etc.
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
 					<script type="text/template">
 						## Sequence Functions
 
@@ -354,18 +375,19 @@
 						<pre>
 							<code class="clojure">
 								(def keys [:a :b])
-
 								(def values [1 2])
 
 								(into {} (map vector keys values))
-
 								(apply hash-map (interleave keys values))
-
 								(zipmap keys values)
+								; => {:a 1 :b 2}
 
 								(defn csv-map [lines]
-									(map #(zipmap (map keyword (first lines)) %1)
+									(map #(zipmap (first lines) %1)
 									     (rest lines)))
+
+								(csv-map [["Name" "Age"] ["Sven" 9] ["Anna" 6]])
+								; => ({"Name" "Sven", "Age" 9} {"Name" "Anna", "Age" 6})
 							</code>
 						</pre>
 
@@ -768,6 +790,17 @@
 						## API Boilerplate
 
 						There is a [bare bones API example on Github](https://github.com/peter/clojure-api).
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Resources
+
+						* [ClojureDocs](https://clojuredocs.org)
+						* [Quickref for Clojure Core](https://clojuredocs.org/quickref)
+						* [Clojure Cheat Sheet](http://clojure.org/api/cheatsheet)
+						* [Clojure for the Brave and True](http://www.braveclojure.com)
 					</script>
 				</section>
 
