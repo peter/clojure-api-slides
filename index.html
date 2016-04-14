@@ -688,9 +688,9 @@
 
 						<pre>
 							<code class="clojure">
-								(spit "foobar.txt" "here is some contents")
+								(spit "/tmp/foobar.txt" "here is some contents")
 
-								(slurp "foobar.txt")
+								(slurp "/tmp/foobar.txt")
 								; => here is some contents
 							</code>
 						</pre>
@@ -703,6 +703,40 @@
 
 							<pre>
 								<code class="clojure">
+									(.toUpperCase "fred") ; => "FRED"
+
+									(System/getenv "USER") ; => "peter.marklund"
+
+									Math/PI ; => 3.141592...
+
+									(doto (new java.util.HashMap) (.put "a" 1) (.put "b" 2))
+									; => {"a" 1, "b" 2}
+
+									(import [java.util Date])
+									(Date.)
+									; => #inst "2016-04-14T14:38:36.486-00:00"
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Type Hints
+
+							<pre>
+								<code class="clojure">
+									(defn len [x]
+									  (.length x))
+
+									(defn len2 [^String x]
+									  (.length x))
+
+									(time (reduce + (map len (repeat 1000000 "asdf"))))
+									; => "Elapsed time: 3007.198 msecs"
+
+									(time (reduce + (map len2 (repeat 1000000 "asdf"))))
+									; => "Elapsed time: 308.045 msecs"
 								</code>
 							</pre>
 				    </script>
@@ -740,7 +774,15 @@
 			    <script type="text/template">
 						## Ring Middleware
 
-						Middleware are higher-level functions that add additional functionality to handlers. The first argument of a middleware function should be a handler, and its return value should be a new handler function that will call the original handler.
+						Middleware are handlers that wrap other handlers.
+
+						<pre>
+							<code class="clojure">
+								(defn wrap-response-time [handler]
+									(fn [req]
+										(time (handler req))))
+							</code>
+						</pre>
 					</script>
 				</section>
 
@@ -750,6 +792,19 @@
 
 						<pre>
 							<code class="clojure">
+								(ns app.web
+								  (:require [ring.adapter.jetty :as jetty]))
+
+								(defn app [request]
+								  {:status 200
+								   :headers {"Content-Type" "text/html"}
+								   :body "Welcome to my Clojure API"})
+
+								(defn port []
+									(Integer. (or (System/getenv "PORT") 5000)))
+
+								(defn -main []
+								  (jetty/run-jetty app {:port (port) :join? false}))
 							</code>
 						</pre>
 					</script>
