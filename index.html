@@ -77,9 +77,9 @@
 							## Data Orientation
 
 							* Programming is data processing
-							* Emphasizes data over code
+							* Emphasize data over code
 							* Objects are ok for process but bad for information
-							* Plain data accessed with a huge set of library functions
+							* Use plain data accessed with a huge set of library functions
 				    </script>
 				</section>
 
@@ -102,25 +102,25 @@
 
 							<pre>
 								<code class="clojure">
-									123
+									123 ; java.lang.Long
 
-									1.23
+									1.23 ; java.lang.Double
 
-									"foobar"
+									"foobar" ; java.lang.String
 
-									my-variable
+									true, false ; java.lang.Boolean
 
-									:my-keyword
+									nil ; java null
 
-									true
+									#"fo.*bar" ; java.util.regex.Pattern
 
-									false
+									my-variable ; clojure.lang.Symbol
 
-									nil
-
-									#"fo.*bar"
+									:my-keyword ; clojure.lang.Keyword
 								</code>
 							</pre>
+
+							Note: these are the usual Java types java.lang.Long/Double/String/Boolean
 				    </script>
 				</section>
 
@@ -156,13 +156,13 @@
 
 							<pre class="notes">
 								<code class="clojure">
-									'(1 "foobar" 3)
+									'(1 "foobar" 3); clojure.lang.PersistentList
 
-									[5 nil 3]
+									[5 nil 3] ; clojure.lang.PersistentVector
 
-									{:a 1 :b 2}
+									{:a 1 :b 2} ; clojure.lang.PersistentArrayMap
 
-									#{:foo :bar}
+									#{:foo :bar} ; clojure.lang.PersistentHashSet
 								</code>
 							</pre>
 
@@ -184,13 +184,85 @@
 									(defn greeting [name]
 										(str "Hello " name))
 
+									(def greeting (fn [name]
+									                (str "Hello " name)))
+
+									(def greeting #(str "Hello " %))
+
 									(greeting "Joe")
 									; => "Hello Joe"
 								</code>
 							</pre>
 
-							TODO: named functions and anonymous functions. Using let.
+							Note: functions can be named or anonymous. Anonymous functions
+							can be written in two ways. All function definitions are equivalent.
 				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Let
+
+							<pre>
+								<code class="clojure">
+									(defn authenticate [email password]
+										(let [success (and (= email "open")
+										                   (= password "sesame"))]
+											(if success "token" nil)))
+
+									(defn login [request]
+										(let [email (get-in request [:params :email])
+										      password (get-in request [:params :password])
+										      token (authenticate email password)]
+										  (if token
+											{:status 200 :body {:token token}}
+											{:status 401})))
+
+									(login {:params {:email "open" :password "sesame"}})
+									; => {:status 200 :body {:token "token"}}
+								</code>
+							</pre>
+
+							Note: let creates local and lexically scoped bindings (vars).
+						</script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Namespaces with Vars
+
+							<pre>
+								<code class="clojure">
+									; File: app/util.clj
+									(ns app.util)
+
+									(def pi 3.14)
+
+									(defn area [radius]
+										(* pi (Math/pow radius 2)))
+								</code>
+							</pre>
+						</script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Using Namespaces with Vars
+
+							<pre>
+								<code class="clojure">
+									; File: app/web.clj
+									(ns app.web
+										(require [app.util :as util]))
+
+									util/pi
+									; => 3.14
+
+									(util/area 2)
+									; => 12.56
+								</code>
+							</pre>
+						</script>
 				</section>
 
 				<section data-markdown>
@@ -261,17 +333,15 @@
 								filter/remove
 								reduce
 								conj/cons
-								first
-								second
-								last
+								first/second/last
 								next
 								not-empty
 								count
-								take
+								take/drop
 								reverse
 								partition/flatten
 								distinct
-								replace
+								...
 							</code>
 						</pre>
 					</script>
@@ -331,6 +401,27 @@
 
 			<section data-markdown>
 				<script type="text/template">
+					## Transforming values of map
+
+					<pre>
+						<code class="clojure">
+							(defn map-values [f dict]
+								(zipmap (keys m) (map f (vals m))))
+
+							(defn map-values [f m]
+								(reduce (fn [r [k v]] (assoc r k (f v)))
+								        {}
+								        m))
+
+							(map-values (partial * 2) {:a 1 :b 2})
+							; => {:a 2, :b 4}
+						</code>
+					</pre>
+				</script>
+			</section>
+
+			<section data-markdown>
+				<script type="text/template">
 					## Deep Map Merge
 
 					<pre>
@@ -344,6 +435,32 @@
 
 							(deep-merge {:a {:b 1}} {:a {:c 2}})
 							; => {:a {:b 1 :c 2}}
+						</code>
+					</pre>
+				</script>
+			</section>
+
+			<section data-markdown>
+				<script type="text/template">
+					## Strings
+
+					<pre>
+						<code class="clojure">
+							(re-matches #"^foo.*" "foobar")
+							; => "foobar"
+
+							(re-seq #"\w+" "Hello World")
+							; => ("Hello" "World")
+
+							(require '[clojure.string :as str])
+
+							(str/split "A fine day it is" #"\W+")
+							; => ["A" "fine" "day" "it" "is"]
+
+							(str/replace "foobar foobar" #"(foo)(bar)" "$2$1")
+							; => "barfoo barfoo"
+
+							; lower-case, blank?, starts-with?/ends-with?, includes?
 						</code>
 					</pre>
 				</script>
@@ -480,6 +597,16 @@
 
 							<pre>
 								<code class="clojure">
+									(defn counter []
+									  (let [cnt (atom 0)]
+									    {:inc! (fn [] (swap! cnt inc))
+									     :dec! (fn [] (swap! cnt dec))
+									     :get (fn [] @cnt)} ))
+
+									(let [cnt (counter)]
+									  ((:inc! cnt))
+									  ((:inc! cnt))
+									  ((:get cnt)))
 								</code>
 							</pre>
 				    </script>
@@ -559,6 +686,17 @@
 
 				<section data-markdown>
 			    <script type="text/template">
+						## Ring Example
+
+						<pre>
+							<code class="clojure">
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
 						## Calling REST APIs
 
 						<pre>
@@ -627,7 +765,7 @@
 
 				<section data-markdown>
 			    <script type="text/template">
-						## API Example
+						## API Boilerplate
 
 						There is a [bare bones API example on Github](https://github.com/peter/clojure-api).
 					</script>
