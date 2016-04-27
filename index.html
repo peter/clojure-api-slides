@@ -762,35 +762,13 @@
 						<pre>
 							<code class="clojure">
 								(defn index-filter [pred coll]
+									(let [index first
+									      value second]
 									(->> (map-indexed vector coll)
-									     (filter (comp pred second))
-									     (map first)))
+									     (filter (comp pred value))
+									     (map index))))
 
-								(defn index-of-any [pred coll]
-									(first (index-filter pred coll)))
-
-								(index-of-any #{\b \y} "zzabyycdxx")
-								; => 3
-							</code>
-						</pre>
-					</script>
-				</section>
-
-				<section data-markdown>
-			    <script type="text/template">
-						## Index of Chars in Clojure 3
-
-						<pre>
-							<code class="clojure">
-								(defn index-filter [pred coll]
-									(->> (map-indexed vector coll)
-									     (filter (fn [[idx v]] (pred v)))
-										 (map (fn [[idx v]] idx))))
-
-								(defn index-of-any [pred coll]
-									(first (index-filter pred coll)))
-
-								(index-of-any #{\b \y} "zzabyycdxx")
+								(first (index-filter #{\b \y} "zzabyycdxx"))
 								; => 3
 							</code>
 						</pre>
