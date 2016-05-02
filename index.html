@@ -836,6 +836,28 @@
 				</section>
 
 				<section data-markdown>
+				    <script type="text/template">
+							## Dynamic Function Dispatch
+
+							<pre>
+								<code class="clojure">
+									(defn greet [name]
+										(str "Hello " name))
+
+									(defn load-ref
+										([ns-name ref-name]
+											(require (symbol ns-name))
+											(ns-resolve (find-ns (symbol ns-name))
+											            (symbol ref-name))))
+
+									((load-ref (ns-name *ns*) "greet") "Joe")
+									; => "Hello Joe"
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
 			    <script type="text/template">
 						## Web Development with Ring
 
