@@ -844,13 +844,12 @@
 									(defn greet [name]
 										(str "Hello " name))
 
-									(defn load-ref
-										([ns-name ref-name]
-											(require (symbol ns-name))
-											(ns-resolve (find-ns (symbol ns-name))
-											            (symbol ref-name))))
+									(defn load-var [ns-name var-name]
+										(require (symbol ns-name))
+										(ns-resolve (find-ns (symbol ns-name))
+											        (symbol var-name)))
 
-									((load-ref (ns-name *ns*) "greet") "Joe")
+									((load-var (ns-name *ns*) "greet") "Joe")
 									; => "Hello Joe"
 								</code>
 							</pre>
