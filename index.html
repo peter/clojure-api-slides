@@ -77,9 +77,9 @@
 							## Data Orientation
 
 							* Programming is data processing
-							* Emphasizes data over code
+							* Emphasize data over code
 							* Objects are ok for process but bad for information
-							* Uses plain data accessed with a huge set of library functions
+							* Use plain data accessed via a large set of core functions
 				    </script>
 				</section>
 
@@ -177,21 +177,21 @@
 
 						<pre>
 							<code class="clojure">
-								(defn authenticate [email password]
-									(if-let [success (and (= email "open")
-									                      (= password "sesame"))]
-							           "token" nil))
+							(defn authenticate [email password]
+								(if (and (= email "open")
+								         (= password "sesame"))
+							  	"token"
+									nil))
 
-								(defn login [request]
-									(let [email (get-in request [:params :email])
-									      password (get-in request [:params :password])
-									      token (authenticate email password)]
-									  (if token
-										{:status 200 :body {:token token}}
-										{:status 401})))
+							(defn login [request]
+							  (if [email (get-in request [:params :email])
+								   password (get-in request [:params :password])
+								   token (authenticate email password)]
+								{:status 200 :body {:token token}}
+								{:status 401}))
 
-								(login {:params {:email "open" :password "sesame"}})
-								; => {:status 200 :body {:token "token"}}
+						    (login {:params {:email "open" :password "sesame"}})
+						    ; => {:status 200 :body {:token "token"}}
 							</code>
 						</pre>
 					</script>
@@ -289,7 +289,7 @@
 
 				<section data-markdown>
 			    <script type="text/template">
-						## Truthiness
+						## Truth
 
 						Only nil and false are falsey, everything else is truthy
 
@@ -361,6 +361,7 @@
 								reverse
 								partition/flatten
 								distinct
+								doseq
 								...
 							</code>
 						</pre>
@@ -469,18 +470,15 @@
 						<code class="clojure">
 							(re-matches #"^foo.*" "foobar")
 							; => "foobar"
-
 							(re-seq #"\w+" "Hello World")
 							; => ("Hello" "World")
-
-							(require '[clojure.string :as str])
-
 							(str/split "A fine day it is" #"\W+")
-							; => ["A" "fine" "day" "it" "is"]
-
 							(str/replace "foobar foobar" #"(foo)(bar)" "$2$1")
 							; => "barfoo barfoo"
-
+							(str "Hello" " " "World")
+							; => "Hello World"
+							(format "Hello there, %s" "bob")
+							; "Hello there, bob"
 							; lower-case, blank?, starts-with?/ends-with?, includes?
 						</code>
 					</pre>
@@ -684,6 +682,28 @@
 				</section>
 
 				<section data-markdown>
+			    <script type="text/template">
+						## Infinite/Lazy Sequences
+
+						<pre>
+							<code class="clojure">
+								(defn new-counter []
+									(let [count (atom 0)]
+										#(swap! count inc)))
+
+								(def counter (new-counter))
+
+								(take 10 (repeatedly counter))
+
+								(take 10 (iterate inc 0))
+
+								(take 10 (repeatedly rand))
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
 				    <script type="text/template">
 							## Macros
 
@@ -784,7 +804,6 @@
 								(spit "/tmp/foobar.txt" "here is some contents")
 
 								(slurp "/tmp/foobar.txt")
-								; => here is some contents
 							</code>
 						</pre>
 					</script>
