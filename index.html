@@ -98,35 +98,7 @@
 
 				<section data-markdown>
 				    <script type="text/template">
-							## Atomic Data Types
-
-							<pre>
-								<code class="clojure">
-									123 ; java.lang.Long
-
-									1.23 ; java.lang.Double
-
-									"foobar" ; java.lang.String
-
-									true, false ; java.lang.Boolean
-
-									nil ; java null
-
-									#"fo.*bar" ; java.util.regex.Pattern
-
-									my-variable ; clojure.lang.Symbol
-
-									:my-keyword ; clojure.lang.Keyword
-								</code>
-							</pre>
-
-							Note: these are the usual Java types java.lang.Long/Double/String/Boolean
-				    </script>
-				</section>
-
-				<section data-markdown>
-				    <script type="text/template">
-							## Functions
+							## Three Ways to Define a Function
 
 							<pre>
 								<code class="clojure">
@@ -137,15 +109,72 @@
 									                (str "Hello " name)))
 
 									(def greeting #(str "Hello " %))
-
-									(greeting "Joe")
-									; => "Hello Joe"
 								</code>
 							</pre>
 
 							Note: functions can be named or anonymous. Anonymous functions
 							can be written in two ways. All function definitions are equivalent.
 				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Calling a Function
+
+							<pre>
+								<code class="clojure">
+									(greeting "Joe")
+									; => "Hello Joe"
+
+									(greeting)
+									; => ArityException
+								</code>
+							</pre>
+
+							Note: functions can be named or anonymous. Anonymous functions
+							can be written in two ways. All function definitions are equivalent.
+				    </script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Multi-Arity Functions
+
+						<pre>
+							<code class="clojure">
+								(defn greeting
+									([name] (str "Hello " name))
+									([] (greeting "World")))
+
+								(greeting)
+								; => "Hello World"
+
+								(greeting "Joe")
+								; => "Hello Joe"
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Variadic Functions and Apply
+
+						<pre>
+							<code class="clojure">
+								(defn complement [f]
+									(fn [& args]
+										(not (apply f args))))
+
+								(def not-nil? (complement nil?))
+
+								(not-nil? "foobar")
+								; => true
+							</code>
+						</pre>
+
+						Note: This is also an example of a higher order function that returns a function.
+					</script>
 				</section>
 
 				<section data-markdown>
@@ -166,6 +195,25 @@
 
 								(foo 3)
 								; => 6
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Global vs Local Scope
+
+						<pre>
+							<code class="clojure">
+								(def thing "global")
+
+								(let [thing "local"]
+									thing)
+								; => "local"
+
+								thing
+								; => "global"
 							</code>
 						</pre>
 					</script>
@@ -199,40 +247,30 @@
 
 				<section data-markdown>
 				    <script type="text/template">
-							## Namespaces with Vars
+							## Atomic Data Types
 
 							<pre>
 								<code class="clojure">
-									; File: app/util.clj
-									(ns app.util)
+									123 ; java.lang.Long
 
-									(def pi 3.14)
+									1.23 ; java.lang.Double
 
-									(defn area [radius]
-										(* pi (Math/pow radius 2)))
+									"foobar" ; java.lang.String
+
+									true, false ; java.lang.Boolean
+
+									nil ; java null
+
+									#"fo.*bar" ; java.util.regex.Pattern
+
+									my-variable ; clojure.lang.Symbol
+
+									:my-keyword ; clojure.lang.Keyword
 								</code>
 							</pre>
-						</script>
-				</section>
 
-				<section data-markdown>
-				    <script type="text/template">
-							## Using a Namespace
-
-							<pre>
-								<code class="clojure">
-									; File: app/web.clj
-									(ns app.web
-										(require [app.util :as util]))
-
-									util/pi
-									; => 3.14
-
-									(util/area 2)
-									; => 12.56
-								</code>
-							</pre>
-						</script>
+							Note: these are the usual Java types java.lang.Long/Double/String/Boolean
+				    </script>
 				</section>
 
 				<section data-markdown>
@@ -262,25 +300,23 @@
 
 				<section data-markdown>
 				    <script type="text/template">
-							## Equality
+							## Data as Functions
 
-							Value semantics for all data types and structures
-
-							<pre>
+							<pre class="notes">
 								<code class="clojure">
-									(= "foobar" "foobar")
-									; => true
+									([5 nil 3] 2) ; => 3
 
-									(= 1 1.0)
-									; => false
+									(nth [5 nil 3] 1 :default) ; => nil
 
-									(== 1 1.0)
-									; => true
+									({:a 1 :b 2} :b) ; => 2
 
-									(= '(1 2) [1 2])
-									; => true
+									(:b {:a 1 :b 2}) ; => 2
 
-									(= {:a 1 :b 2} {:a 1 :b 2})
+									(get {:a 1 :b nil} :b :default) ; => nil
+
+									(#{:foo :bar} :bar) ; => :bar
+
+									(contains? #{:foo :bar} :bar)
 									; => true
 								</code>
 							</pre>
@@ -288,56 +324,20 @@
 				</section>
 
 				<section data-markdown>
-			    <script type="text/template">
-						## Truth
-
-						Only nil and false are falsey, everything else is truthy
-
-						<pre>
-							<code class="clojure">
-								(defn truthy? [value]
-									(if value true false))
-
-								(truthy? 0)
-								; => true
-
-								(truthy? "")
-								; => true
-
-								(truthy? [])
-								; => true
-
-								(truthy? nil)
-								; => false
-							</code>
-						</pre>
-
-						Note: The [not-empty](https://clojuredocs.org/clojure.core/not-empty) function
-									is useful if you need empty data to evaluate to boolean false.
-					</script>
-				</section>
-
-				<section data-markdown>
 				    <script type="text/template">
-							## Introspection
+							## For
 
 							<pre class="notes">
 								<code class="clojure">
-									(class 1.23)
-									; => java.lang.Double
+									(for [color [:red :blue] animal [:mouse :duck]]
+										(str (name color) " " (name animal)))
 
-									(ancestors (class 1.23))
-									; => #{java.io.Serializable java.lang.Comparable ...}
+									; => ("red mouse" "red duck" "blue mouse" "blue duck")
 
-									(instance? Double 1.23)
-									; => true
+									(for [n (range 10) :when (even? n)]
+										n)
 
-									(map #(% 1.23) [number? float? integer? zero?
-									                string? keyword? map? vector? nil?])
-									; => (true true false false false false false false false)
-
-									(clojure.reflect/reflect 1)
-									; => detailed info on class, ancestors, methods etc.
+									; => (0 2 4 6 8)
 								</code>
 							</pre>
 				    </script>
@@ -349,17 +349,18 @@
 
 						<pre>
 							<code class="clojure">
-								map
-								filter/remove
-								reduce
+								map/filter/remove/reduce
 								conj/cons
-								first/second/last
-								next
+								first/second/last/next
 								not-empty
+								every?/not-any?/some
 								count
 								take/drop
 								reverse
 								partition/flatten
+								interleave/interpose
+								group-by
+								sort-by
 								distinct
 								doseq
 								...
@@ -380,18 +381,33 @@
 								(into {} (map vector keys values))
 								(apply hash-map (interleave keys values))
 								(zipmap keys values)
+
 								; => {:a 1 :b 2}
 
+								(reduce (fn [m [k v]] (assoc m k v))
+								        {}
+								        (partition 2 [:a 1 :b 2]))
+
+								; => {:a 1 :b 2}
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## CSV Example
+
+						<pre>
+							<code class="clojure">
 								(defn csv-map [lines]
-									(map #(zipmap (first lines) %1)
+									(map #(zipmap (first lines) %)
 									     (rest lines)))
 
 								(csv-map [["Name" "Age"] ["Sven" 9] ["Anna" 6]])
 								; => ({"Name" "Sven", "Age" 9} {"Name" "Anna", "Age" 6})
 							</code>
 						</pre>
-
-						Note: Example usage of csv-map: (csv-map [["Name" "Age"] ["Sven" 9] ["Anna" 6]])
 					</script>
 				</section>
 
@@ -462,6 +478,25 @@
 				</script>
 			</section>
 
+				<section data-markdown>
+				    <script type="text/template">
+							## Set
+
+							<pre class="notes">
+								<code class="clojure">
+									(clojure.set/union #{:a :b} #{:b :c})
+									; => #{:c :b :a}
+
+									(clojure.set/intersection #{:a :b} #{:b :c})
+									; => #{:b}
+
+									(clojure.set/difference #{:a :b} #{:b :c})
+									; => #{:a}
+								</code>
+							</pre>
+				    </script>
+				</section>
+
 			<section data-markdown>
 				<script type="text/template">
 					## Strings
@@ -485,6 +520,176 @@
 				</script>
 			</section>
 
+				<section data-markdown>
+				    <script type="text/template">
+							## Equality
+
+							Value semantics for all data types and structures
+
+							<pre>
+								<code class="clojure">
+									(= "foobar" "foobar")
+									; => true
+
+									(= 1 1.0)
+									; => false
+
+									(== 1 1.0)
+									; => true
+
+									(= '(1 2) [1 2])
+									; => true
+
+									(= {:a 1 :b 2} {:a 1 :b 2})
+									; => true
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Truth
+
+						Only nil and false are falsey, everything else is truthy
+
+						<pre>
+							<code class="clojure">
+								(defn truthy? [value]
+									(if value true false))
+
+								(truthy? 0)
+								; => true
+
+								(truthy? "")
+								; => true
+
+								(truthy? [])
+								; => true
+
+								(truthy? nil)
+								; => false
+							</code>
+						</pre>
+
+						Note: The [not-empty](https://clojuredocs.org/clojure.core/not-empty) function
+									is useful if you need empty data to evaluate to boolean false.
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Control Flow
+
+						<pre>
+							<code class="clojure">
+								(if true "it is true" "it is false")
+								; => "it is true"
+
+								(if (or (and "foo" "bar") "baz") "true" "false")
+								; => "true"
+
+								(def n 5)
+
+								(cond
+									(< n 0) "is negative"
+									(= n 0) "is zero"
+									(> n 0) "is positive")
+								; => "is positive"
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Nil
+
+						<pre>
+							<code class="clojure">
+								(:foo nil)
+								; => nil
+
+								(get nil :foo :default)
+								; => :default
+
+								(first nil)
+								; => nil
+
+								(next nil)
+								; => nil
+
+								(inc nil)
+								; => NullPointerException
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Defining a Namespace
+
+							<pre>
+								<code class="clojure">
+									; File: app/util.clj
+									(ns app.util)
+
+									(def pi 3.14)
+
+									(defn area [radius]
+										(* pi (Math/pow radius 2)))
+								</code>
+							</pre>
+						</script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Using a Namespace
+
+							<pre>
+								<code class="clojure">
+									; File: app/web.clj
+									(ns app.web
+										(require [app.util :as util]))
+
+									util/pi
+									; => 3.14
+
+									(util/area 2)
+									; => 12.56
+								</code>
+							</pre>
+						</script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Introspection
+
+							<pre class="notes">
+								<code class="clojure">
+									(class 1.23)
+									; => java.lang.Double
+
+									(ancestors (class 1.23))
+									; => #{java.io.Serializable java.lang.Comparable ...}
+
+									(instance? Double 1.23)
+									; => true
+
+									(map #(% 1.23) [number? float? integer? zero?
+									                string? keyword? map? vector? nil?])
+									; => (true true false false false false false false false)
+
+									(clojure.reflect/reflect 1)
+									; => detailed info on class, ancestors, methods etc.
+								</code>
+							</pre>
+				    </script>
+				</section>
+
 			<section data-markdown>
 				<script type="text/template">
 					## Destructuring
@@ -495,48 +700,15 @@
 								(reduce (fn [m [k v]] (assoc m v k))
 								        {}
 								        map))
+							(map-invert {:a 1 :b 2})
+							; => {1 :a, 2 :b}
 
 							(def data {:a 1 :b 2})
 
 							(let [{:keys [a b c] :or {c 3}} data]
-								[a b c])
-							; => [1 2 3]
-						</code>
-					</pre>
-				</script>
-			</section>
-
-			<section data-markdown>
-				<script type="text/template">
-					## Variadic Functions and Apply
-
-					<pre>
-						<code class="clojure">
-							(defn complement [f]
-								(fn [& args]
-									(not (apply f args))))
-						</code>
-					</pre>
-
-					Note: This is also an example of a higher order function that returns a function.
-				</script>
-			</section>
-
-			<section data-markdown>
-				<script type="text/template">
-					## Multi-Arity Functions
-
-					<pre>
-						<code class="clojure">
-							(defn greeting
-								([name] (str "Hello " name))
-								([] (greeting "World")))
-
-							(greeting)
-							; => "Hello World"
-
-							(greeting "Joe")
-							; => "Hello Joe"
+								(println a b c))
+							; => 1 2 3
+							; => nil
 						</code>
 					</pre>
 				</script>
@@ -661,21 +833,137 @@
 
 							<pre>
 								<code class="clojure">
-									(defn create-counter []
-										(let [count (atom 0)
-													ops {
-						  :inc! #(swap! count inc)
-						  :dec! #(swap! count dec)
-						  :get #(deref count)}]
-											(fn [op-name & args]
-												(apply (op-name ops) args))))
+									(def counter (atom 0))
 
-									(def counter (create-counter))
+									(defn print-inc [value]
+										(println (str "thread " (.getId (Thread/currentThread))
+										              " value " (inc value)))
+										(inc value))
 
-									(counter :inc!)
-									(counter :inc!)
-									(counter :get)
-									; => 2
+									(let [n 5]
+										(future (dotimes [_ n] (swap! counter print-inc)))
+										(future (dotimes [_ n] (swap! counter print-inc)))
+										(future (dotimes [_ n] (swap! counter print-inc))))
+
+									@counter
+									; => 15
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Concurrency - Ref
+
+							<pre>
+								<code class="clojure">
+									(def foo (ref 0))
+									(def bar (ref 1))
+
+									(alter foo inc)
+									; => IllegalStateException No transaction running
+
+									(dosync
+										(alter foo inc)
+										(alter bar dec))
+
+									@foo ; => 1
+
+									@bar ; => 0
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Concurrency - Agent
+
+							<pre>
+								<code class="clojure">
+									(def foo (agent 0))
+
+									(send foo inc)
+
+									@foo ; => 1
+
+									(send foo #(/ % 0))
+
+									(send foo inc)
+									; => ArithmeticException Divide by zero
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Concurrency - Agent, Take 2
+
+							<pre>
+								<code class="clojure">
+									(defn error-handler [agent e]
+										(println "Agent" agent " threw error " e))
+
+									(def foo (agent 0 :error-handler error-handler))
+
+									(send foo inc)
+
+									@foo ; => 1
+
+									(send foo #(/ % 0))
+									; => Agent ... threw error ...
+
+									(send foo inc)
+
+									@foo ; => 2
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Concurrency - Channels
+
+							<pre>
+								<code class="clojure">
+									(require '[clojure.core.async :refer [chan &gt;!! &lt:!!]])
+
+									(def foo (chan 10)) ; => 10 buffered channel
+
+									(&gt;!! foo 1)
+
+									(&lt;!! foo)
+									; => 1
+
+									(&lt;!! foo)
+									; blocks...
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Concurrency - Channels, Take 2
+
+							<pre>
+								<code class="clojure">
+									(require '[clojure.core.async :refer [chan go alts! &gt;!]])
+
+									(def foo (chan))
+									(def bar (chan))
+
+									(go
+									  (loop []
+										  (let [v (alts! [foo bar])]
+											  (println "Received " v))
+										  (recur)))
+
+									(go (&gt;! foo 1))
+									(go (&gt;! bar 2))
 								</code>
 							</pre>
 				    </script>
@@ -694,10 +982,13 @@
 								(def counter (new-counter))
 
 								(take 10 (repeatedly counter))
+								; => (1 2 3 4 5 6 7 8 9 10)
 
 								(take 10 (iterate inc 0))
+								; => (0 1 2 3 4 5 6 7 8 9)
 
 								(take 10 (repeatedly rand))
+								; => (0.9000394153557845 0.6840742826831324 ...)
 							</code>
 						</pre>
 					</script>
@@ -1080,9 +1371,9 @@
 						## Resources
 
 						* [ClojureDocs](https://clojuredocs.org)
-						* [Quickref for Clojure Core](https://clojuredocs.org/quickref)
 						* [Clojure Cheat Sheet](http://clojure.org/api/cheatsheet)
 						* [Clojure for the Brave and True](http://www.braveclojure.com)
+						* [Living Clojure](http://www.amazon.com/Living-Clojure-Carin-Meier/dp/1491909048)
 						* [Programming Clojure](https://pragprog.com/book/shcloj2/programming-clojure)
 					</script>
 				</section>
