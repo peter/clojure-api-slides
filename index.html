@@ -294,7 +294,8 @@
 										Maps are functions that take a key and return a value.
 										All data structures can hold heterogeneous data and can be nested.
 										Lists and vectors have a sequential shape. Hash maps and sets
-										are associative.
+										are associative. Vectors are also associative on the index and
+										work with `assoc`.
 				    </script>
 				</section>
 
@@ -418,20 +419,19 @@
 					<pre>
 						<code class="clojure">
 							(assoc {:a 1} :b 2) ; => {:a 1, :b 2}
-
 							(dissoc {:a 1 :b 2} :b) ; => {:a 1}
-
-							(select-keys {:a 1 :b 2} [:b]) ; => {:b 2}
 
 							(get-in {:a {:b 1}} [:a :b]) ; => 1
 
 							(update-in {:a {:b 1}} [:a :b] inc) ; => {:a {:b 2}}
-
 							(update-in {:a} [:a :b] (fnil inc 0)) ; => {:a {:b 0}}
 
+							(select-keys {:a 1 :b 2} [:b]) ; => {:b 2}
 							(clojure.set/rename-keys {:a 1} {:a :b}) ; => {:b 1}
 
 							(merge {:a {:b 1}} {:a {:c 2}}) ; => {:a {:c 2}}
+
+							(assoc [:foo :bar] 3 :baz) ; => IndexOutOfBoundsException
 						</code>
 					</pre>
 				</script>
@@ -598,6 +598,9 @@
 								; => "is positive"
 							</code>
 						</pre>
+
+						Note: there is also `when` and `case`. Note that `and`, `or` etc. are variadic in arity.
+									Sometimes you need to use `do` to wrap multiple statements for example in an if clause.
 					</script>
 				</section>
 
@@ -777,6 +780,9 @@
 								(map channel-key channels) ; => [:tv4 :tv4_totalt]
 							</code>
 						</pre>
+
+						Note: For a discussion around handling errors in a function chain, see
+						      ["Good Enough" error handling in Clojure](https://adambard.com/blog/acceptable-error-handling-in-clojure/)
 					</script>
 				</section>
 
@@ -1109,6 +1115,8 @@
 									(.toUpperCase "fred") ; => "FRED"
 
 									(System/getenv "USER") ; => "peter.marklund"
+
+									(Thread/sleep (rand-int 1000))
 
 									Math/PI ; => 3.141592...
 
