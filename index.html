@@ -74,12 +74,36 @@
 
 				<section data-markdown>
 				    <script type="text/template">
+				        ## Philosophy
+
+								* Simplicity is a prerequisite for reliability
+								* The complexity of our systems dominate our ability to be productive in the long run
+								* Programming languages differ not in what they make possible but in what they make practical and idiomatic
+								* Number of bugs is the number of lines of code to the power of 1.5
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
 							## Data Orientation
 
 							* Programming is data processing
 							* Emphasize data over code
-							* Objects are ok for process but bad for information
-							* Use plain data accessed via a large set of core functions
+							* Objects are ok for process but a bad fit for information
+							* Data is just simple immutable information
+							* Access data via a large set of generic functions
+				    </script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Death through Specificity
+
+							By choosing data instead of custom objects we get:
+
+							* A standard way to inspect/compare/modify data
+							* Thread safety
+							* Less code through code reuse and generic functions
 				    </script>
 				</section>
 
