@@ -787,6 +787,233 @@
 
 				<section data-markdown>
 			    <script type="text/template">
+						## defrecord
+
+						<pre>
+							<code class="clojure">
+								(defrecord User [name
+								                 email
+								                 admin])
+
+								(def joe (->User "Joe" "joe@example.com" false))
+
+								(def peter (map->User {
+									:name "Peter"
+									:email "peter@example.com"
+									:admin true}))
+
+								(class peter) ; => user.User
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## defrecord with Type Hints
+
+						<pre>
+							<code class="clojure">
+								(defrecord User [^String name
+								                 ^String email
+								                 ^Boolean admin])
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+							## Type Hints and Performance
+
+							<pre>
+								<code class="clojure">
+									(defn len [x]
+									  (.length x))
+
+									(defn len2 [^String x]
+									  (.length x))
+
+									(time (reduce + (map len (repeat 1000000 "asdf"))))
+									; => "Elapsed time: 3007.198 msecs"
+
+									(time (reduce + (map len2 (repeat 1000000 "asdf"))))
+									; => "Elapsed time: 308.045 msecs"
+								</code>
+							</pre>
+				    </script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Structural typing
+
+						Example from TypeScript:
+
+						<pre>
+							<code class="typescript">
+								interface Named {
+								    name: string;
+								}
+
+								class Person {
+								    name: string;
+								}
+
+								let p: Named;
+
+								p = new Person(); // OK, because of structural typing
+							</code>
+						</pre>
+
+						Note: See the [TypeScript documentation](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
+						      for more details.
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## defrecord with schema
+
+						<pre>
+							<code class="clojure">
+								(require '[schema.core :as s])
+
+								(s/defrecord Ingredient
+									[name      :- s/Str
+									 quantity  :- s/Int
+									 unit      :- s/Keyword])
+
+								(s/defrecord Recipe
+									[name        :- s/Str
+									 ingredients :- [Ingredient]])
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## Schema Validation
+
+						<pre>
+							<code class="clojure">
+								(require '[schema.core :as s])
+
+								(def flour (map->Ingredient {:name "Flour"}))
+
+								(def pancakes (map->Recipe {
+									:name "Pancakes"
+									:ingredients [flour]
+								}))
+
+								(s/validate Recipe pancakes)
+								; => ExceptionInfo Value does not match schema...
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## defn with schema
+
+						<pre>
+							<code class="clojure">
+								(s/defn add-ingredients :- Recipe
+								  [recipe :- Recipe & ingredients :- [Ingredient]]
+									  (update-in recipe [:ingredients] into ingredients))
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## defprotocol
+
+						<pre>
+							<code class="clojure">
+							(defprotocol Lifecycle
+							  (start [component]
+							    "Synchronous, returns updated version of component")
+							  (stop [component]
+							    "Synchronous, returns updated version of component"))
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## defrecord with protocols
+
+						<pre>
+							<code class="clojure">
+							(defrecord Application [database config]
+							  Lifecycle
+
+							  (start [component]
+							      (println "Starting Application..."))
+
+							  (stop [component]
+							    (println "Stopping Application...")))
+							</code>
+						</pre>
+
+						Note: You can use `extend-protocol` to extend basic types with protocols.
+						      You can check if an object satisfies a protocol with `satisfies?`
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## extend Declarations
+
+						<pre>
+							<code class="clojure">
+							(defprotocol Foo
+								(foo [this]))
+
+							(defprotocol Bar
+								(bar [this]))
+
+							(extend java.lang.Number
+							  Bar
+							  {:bar (fn [this] 42)})
+
+							(extend java.lang.String
+							  Foo
+							  {:foo (fn [this] "foo")}
+							  Bar
+							  {:bar (fn [this] "forty two")})
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
+						## extend Usage
+
+						<pre>
+							<code class="clojure">
+							(satisfies? Foo "foobar") ; => true
+
+							(foo "foobar") ; => "foo"
+
+							(bar "foobar") ; => "forty two"
+
+							(bar 123) ; => 42
+
+							(foo 123) ; => IllegalArgumentException No implementation of method
+							</code>
+						</pre>
+					</script>
+				</section>
+
+				<section data-markdown>
+			    <script type="text/template">
 						## Thread First Macro
 
 						<pre>
@@ -1157,28 +1384,6 @@
 
 				<section data-markdown>
 				    <script type="text/template">
-							## Type Hints
-
-							<pre>
-								<code class="clojure">
-									(defn len [x]
-									  (.length x))
-
-									(defn len2 [^String x]
-									  (.length x))
-
-									(time (reduce + (map len (repeat 1000000 "asdf"))))
-									; => "Elapsed time: 3007.198 msecs"
-
-									(time (reduce + (map len2 (repeat 1000000 "asdf"))))
-									; => "Elapsed time: 308.045 msecs"
-								</code>
-							</pre>
-				    </script>
-				</section>
-
-				<section data-markdown>
-				    <script type="text/template">
 							## Dynamic Function Dispatch
 
 							<pre>
@@ -1402,11 +1607,11 @@
 			    <script type="text/template">
 						## Resources
 
-						* [ClojureDocs](https://clojuredocs.org)
 						* [Clojure Cheat Sheet](http://clojure.org/api/cheatsheet)
 						* [Clojure for the Brave and True](http://www.braveclojure.com)
 						* [Living Clojure](http://www.amazon.com/Living-Clojure-Carin-Meier/dp/1491909048)
 						* [Programming Clojure](https://pragprog.com/book/shcloj2/programming-clojure)
+						* [Clojure Applied](https://pragprog.com/book/vmclojeco/clojure-applied)
 					</script>
 				</section>
 
