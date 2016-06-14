@@ -256,11 +256,12 @@
 									nil))
 
 							(defn login [request]
-							  (if [email (get-in request [:params :email])
+							  (let [email (get-in request [:params :email])
 								   password (get-in request [:params :password])
 								   token (authenticate email password)]
-								{:status 200 :body {:token token}}
-								{:status 401}))
+									(if token
+										{:status 200 :body {:token token}}
+										{:status 401})))
 
 						    (login {:params {:email "open" :password "sesame"}})
 						    ; => {:status 200 :body {:token "token"}}
